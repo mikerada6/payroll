@@ -14,8 +14,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import rad.irs.payroll.Payroll.ResourceNotFoundException;
 
 import javax.imageio.ImageIO;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -109,10 +116,45 @@ public class Report {
             ImageIO.write(image,
                           "jpg",
                           new File( targetFilePath+"/"+jsonObject.get("filename")+".jpg"));
+            try {
+                print(targetFilePath + "/" + jsonObject.get("filename") + ".jpg");
+            }catch(Exception e)
+            {
+                e.printStackTrace();
+                throw new ResourceNotFoundException();
+            }
+
+
+
         } catch (IOException e) {
             e.printStackTrace();
             throw new ResourceNotFoundException();
         }
         return "done";
+    }
+
+
+    public void print(String imageFileName) throws IOException, PrinterException {
+        final PrintService printService = PrintServiceLookup.lookupDefaultPrintService();
+        final BufferedImage image = ImageIO.read(new File(imageFileName));
+        final PrinterJob printJob = PrinterJob.getPrinterJob();
+        printJob.setJobName("MyApp: " + imageFileName);
+        printJob.setPrintService(printService);
+        printJob.setPrintable(new Printable() {
+            @Override
+            public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                if (pageIndex == 0) {
+                    final Paper paper = pageFormat.getPaper();
+                    paper.setImageableArea(0.0, 0.0, pageFormat.getPaper().getWidth(), pageFormat.getPaper().getHeight());
+                    pageFormat.setPaper(paper);
+                    graphics.translate((int) pageFormat.getImageableX(), (int) pageFormat.getImageableY());
+                    graphics.drawImage(image, 0, 0, (int) pageFormat.getPaper().getWidth(), (int) pageFormat.getPaper().getHeight(), null);
+                    return PAGE_EXISTS;
+                } else {
+                    return NO_SUCH_PAGE;
+                }
+            }
+        });
+        printJob.print();
     }
 }
