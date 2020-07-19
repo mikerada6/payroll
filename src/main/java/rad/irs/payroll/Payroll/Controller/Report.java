@@ -95,10 +95,10 @@ public class Report {
                     String[] split = key.split("\\.");
                     String temp = myFormat.format(Double.parseDouble(split[0]));
                     graphics.drawString(temp,
-                                        x - metrics.stringWidth(temp),
+                                        x - metrics.stringWidth(temp)-10,
                                         y);
                     graphics.drawString(split[1],
-                                        x + 36,
+                                        x + 25,
                                         y);
                 } else {
                     if(datum.containsKey("style") && datum.get("style").toString().equalsIgnoreCase("center"))
@@ -117,7 +117,7 @@ public class Report {
                           "jpg",
                           new File( targetFilePath+"/"+jsonObject.get("filename")+".jpg"));
             try {
-                print(targetFilePath + "/" + jsonObject.get("filename") + ".jpg");
+//                print(targetFilePath + "/" + jsonObject.get("filename") + ".jpg");
             }catch(Exception e)
             {
                 e.printStackTrace();
