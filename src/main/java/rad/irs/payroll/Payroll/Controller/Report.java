@@ -100,7 +100,7 @@ public class Report {
 
                     String[] split = key.split("\\.");
                     String temp = myFormat.format(Double.parseDouble(split[0]));
-                    if (tempDouble >= 1) {
+                    if (Math.abs(tempDouble) >= 1) {
                         graphics.drawString(temp,
                                             x - metrics.stringWidth(temp) - 10,
                                             y);
