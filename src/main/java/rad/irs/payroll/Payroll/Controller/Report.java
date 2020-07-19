@@ -27,9 +27,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.NumberFormat;
 
 @Controller
@@ -92,38 +89,54 @@ public class Report {
                 int x = Integer.parseInt(datum.get("x").toString());
                 int y = Integer.parseInt(datum.get("y").toString());
                 if (datum.get("format").toString().equalsIgnoreCase("CURRENCY")) {
+                    if (!key.contains(".")) {
+                        key += ".00";
+                    }
+                    if(key.indexOf('.')==0)
+                    {
+                        key = "0"+key;
+                    }
+                    double tempDouble = Double.parseDouble(key);
+
                     String[] split = key.split("\\.");
                     String temp = myFormat.format(Double.parseDouble(split[0]));
-                    graphics.drawString(temp,
-                                        x - metrics.stringWidth(temp)-10,
-                                        y);
+                    if (tempDouble >= 1) {
+                        graphics.drawString(temp,
+                                            x - metrics.stringWidth(temp) - 10,
+                                            y);
+                    }
                     graphics.drawString(split[1],
                                         x + 25,
                                         y);
                 } else {
-                    if(datum.containsKey("style") && datum.get("style").toString().equalsIgnoreCase("center"))
-                    {
+                    if (datum.containsKey("style") && datum.get("style").toString().equalsIgnoreCase("center")) {
                         x -= metrics.stringWidth(key) / 2;
                     }
                     graphics.drawString(key,
-                                        x ,
+                                        x,
                                         y);
                 }
             }
-            String targetFilePath = saveLocation+"/"+jsonObject.get("company")+"/"+jsonObject.get("form")+"/"+jsonObject.get("year")+"/"+jsonObject.get("qtr");
+            String targetFilePath = saveLocation +
+                                    "/" +
+                                    jsonObject.get("company") +
+                                    "/" +
+                                    jsonObject.get("form") +
+                                    "/" +
+                                    jsonObject.get("year") +
+                                    "/" +
+                                    jsonObject.get("qtr");
             File dir = new File(targetFilePath);
             if (!dir.exists()) dir.mkdirs();
             ImageIO.write(image,
                           "jpg",
-                          new File( targetFilePath+"/"+jsonObject.get("filename")+".jpg"));
+                          new File(targetFilePath + "/" + jsonObject.get("filename") + ".jpg"));
             try {
 //                print(targetFilePath + "/" + jsonObject.get("filename") + ".jpg");
-            }catch(Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
                 throw new ResourceNotFoundException();
             }
-
 
 
         } catch (IOException e) {
@@ -145,10 +158,19 @@ public class Report {
             public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
                 if (pageIndex == 0) {
                     final Paper paper = pageFormat.getPaper();
-                    paper.setImageableArea(0.0, 0.0, pageFormat.getPaper().getWidth(), pageFormat.getPaper().getHeight());
+                    paper.setImageableArea(0.0,
+                                           0.0,
+                                           pageFormat.getPaper().getWidth(),
+                                           pageFormat.getPaper().getHeight());
                     pageFormat.setPaper(paper);
-                    graphics.translate((int) pageFormat.getImageableX(), (int) pageFormat.getImageableY());
-                    graphics.drawImage(image, 0, 0, (int) pageFormat.getPaper().getWidth(), (int) pageFormat.getPaper().getHeight(), null);
+                    graphics.translate((int) pageFormat.getImageableX(),
+                                       (int) pageFormat.getImageableY());
+                    graphics.drawImage(image,
+                                       0,
+                                       0,
+                                       (int) pageFormat.getPaper().getWidth(),
+                                       (int) pageFormat.getPaper().getHeight(),
+                                       null);
                     return PAGE_EXISTS;
                 } else {
                     return NO_SUCH_PAGE;
